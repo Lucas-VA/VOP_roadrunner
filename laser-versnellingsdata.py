@@ -112,7 +112,7 @@ tijd = time[beginsample:eindsample]-time[beginsample:eindsample][0]
 datalaser = laser_data[beginsample:eindsample]
 
 plt.figure(figsize=(16,9))
-plt.plot(tijd/60, (datalaser[0]-datalaser)/10+10, label='opgemeten laserdata')
+plt.plot(tijd/60, (datalaser[0]-datalaser)/10+10, label='opgemeten laserdata')  # +10 is simpelweg om de laserdata en versnellingsdata beter te kunnen vergelijken, heeft geen fysische betekenis
 plt.plot(t/60, az, label='opgemeten versnelling')
 plt.legend()
 plt.xlabel('tijd [min]')
@@ -131,7 +131,7 @@ t_zoom = t[int(sec1*100):int(sec2*100)]
 az_zoom = az[int(sec1*100):int(sec2*100)]
 
 plt.figure(figsize=(16,9))
-plt.plot(tijd_zoom, (datalaser_zoom[0]-datalaser_zoom)/10+9, label='opgemeten laserdata')
+plt.plot(tijd_zoom, (datalaser_zoom[0]-datalaser_zoom)/10+9, label='opgemeten laserdata')   # +9 is simpelweg om de laserdata en versnellingsdata beter te kunnen vergelijken, heeft geen fysische betekenis
 plt.plot(t_zoom, az_zoom, label='opgemeten versnelling')
 plt.legend()
 plt.xlabel('tijd [sec]')
