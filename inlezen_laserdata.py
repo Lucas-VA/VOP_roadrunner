@@ -6,7 +6,7 @@ laserdata_flat = []
 
 for k in range(104):
     #print(k)
-    bestandsnaam = 'D:\\UGent docs\\VOP_docs\\laserdata\\' + str(k) + '.txt'
+    bestandsnaam = 'D:\\UGent docs\\VOP_docs\\laserdata\\' + str(k) + '.txt'    # plaats waar ik bestanden heb opgeslagen, pas dit zelf aan
     
     data = pd.read_csv(bestandsnaam,
                        sep=" ",
