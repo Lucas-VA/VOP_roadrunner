@@ -58,7 +58,7 @@ nieuwe_freq = 100
 nyquist_freq = 16000 #32000Hz/2
 cutoff_freq = 40 # moet kleiner zijn dan de helft van nieuwe sample frequentie
 
-b, a = butter(2, nyquist_freq/cutoff_freq, btype='low', analog=False)
+b, a = butter(2, cutoff_freq/nyquist_freq, btype='low', analog=False)
 laserdata_lowpass = filtfilt(b, a, laserdata_flat)
 
 laserdata_kort = np.zeros(int(len(laserdata_lowpass)*nieuwe_freq/32000))
