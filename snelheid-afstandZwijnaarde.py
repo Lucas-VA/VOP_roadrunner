@@ -91,7 +91,7 @@ for j in range(3, 4):   # enkel rit 3 wordt hier verwerkt, 4 en 5 zijn te kort e
 #         correcties += list(interpol(correcties[-1], corr, 100))
     correcties = np.array(correcties)
     
-    # foute metingen van de GPS tussen seconde 33 en 42, meting op seconde 36 lijkt wel correct
+    # foute metingen van de GPS tussen seconde 33 en 42, meting op seconde 36 lijkt wel correct. Ook foute meting op seconde 122
     if j == 3:
         corr = float(vx_GPS[36]-vx_GPS[33]-np.sum(ax[33*100+1:36*100+1])*dt)
         b = float(vx_GPS[36]-vx_GPS[33]-np.sum(ax[33*100+1:36*100+1] + interpol(corrections[33], corr, 300))*dt)
@@ -105,6 +105,10 @@ for j in range(3, 4):   # enkel rit 3 wordt hier verwerkt, 4 en 5 zijn te kort e
         b = float(vx_GPS[42]-vx_GPS[36] - np.sum(ax[36*100+1:42*100+1] + interpol(correction, corr, 600))*dt)
         print(b)
         correcties[36*100+1:42*100+1] = interpol(correction, corr, 600) + b/6
+        
+        corr = float(vx_GPS[123]-vx_GPS[121]-np.sum(ax[121*100+1:123*100+1])*dt)
+        b = float(vx_GPS[123]-vx_GPS[121]-np.sum(ax[121*100+1:123*100+1] + interpol(corrections[121], corr, 200))*dt)
+        correcties[121*100+1:123*100+1] = interpol(corrections[121], corr, 200) + b/2
         
     
     ax_corr = ax[:-99] + correcties
