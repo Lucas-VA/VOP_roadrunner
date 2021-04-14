@@ -82,7 +82,11 @@ print(corr)
 b = float(vx_GPS[42]-vx_GPS[36] - np.sum(ax[36*100+1:42*100+1] + interpol(correction, corr, 600))*dt)
 print(b)
 correcties[36*100+1:42*100+1] = interpol(correction, corr, 600) + b/6
-     
+
+corr = float(vx_GPS[123]-vx_GPS[121]-np.sum(ax[121*100+1:123*100+1])*dt)
+b = float(vx_GPS[123]-vx_GPS[121]-np.sum(ax[121*100+1:123*100+1] + interpol(corrections[121], corr, 200))*dt)
+correcties[121*100+1:123*100+1] = interpol(corrections[121], corr, 200) + b/2
+    
 ax_corr = ax[:-99] + correcties
 vx_corr = np.cumsum(ax_corr*dt) + vx0
 dx_corr = np.cumsum(vx_corr*dt)
