@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.signal import butter,filtfilt
 
 laserdata_flat = []
 
@@ -48,7 +49,24 @@ delta_t = t_eind - t_0
 
 time = np.arange(len(laserdata_flat))/(len(laserdata_flat)-1)*delta_t
 
-pd.DataFrame({'time': time[int(0.08*10**8):int(0.27*10**8)], 'afstand_laser': laserdata_flat[int(0.08*10**8):int(0.27*10**8)]}).to_csv('laser_rit1.csv')  # maakt csv bestand aan van de eerste laserrit
+# pd.DataFrame({'time': time[int(0.08*10**8):int(0.27*10**8)], 'afstand_laser': laserdata_flat[int(0.08*10**8):int(0.27*10**8)]}).to_csv('laser_rit1.csv')  # maakt csv bestand aan van de eerste laserrit
 # pd.DataFrame({'time': time[int(0.34*10**8):int(0.58*10**8)], 'afstand_laser': laserdata_flat[int(0.34*10**8):int(0.58*10**8)]}).to_csv('laser_rit2.csv')  #csv bestand voor rit 2 en 3, niet zinvol want daar is te weinig GPS data voor
 # pd.DataFrame({'time': time[int(0.73*10**8):], 'afstand_laser': laserdata_flat[int(0.73*10**8):]}).to_csv('laser_rit3.csv')
 
+### Aapassing sample hertz
+nieuwe_freq = 100
+nyquist_freq = 16000 #32000Hz/2
+cutoff_freq = 40 # moet kleiner zijn dan de helft van nieuwe sample frequentie
+
+b, a = butter(2, nyquist_freq/cutoff_freq, btype='low', analog=False)
+laserdata_lowpass = filtfilt(b, a, laserdata_flat)
+
+laserdata_kort = np.zeros(int(len(laserdata_lowpass)*nieuwe_freq/32000))
+tijd_kort = np.zeros(int(len(laserdata_lowpass)*nieuwe_freq/32000))
+for i in range(int(len(laserdata_lowpass)*nieuwe_freq/32000)):
+    laserdata_kort[i] = laserdata_lowpass[i*32000/nieuwe_freq]
+    tijd_kort[i] = time[i*32000/nieuwe_freq]
+
+# pd.DataFrame({'time': tijd_kort[int(0.08/320*10**8):int(0.27/320*10**8)], 'afstand_laser': laserdata_kort[int(0.08/320*10**8):int(0.27/320*10**8)]}).to_csv('laser_rit1_kort.csv')
+# pd.DataFrame({'time': tijd_kort[int(0.34/320*10**8):int(0.58/320*10**8)], 'afstand_laser': laserdata_kort[int(0.34/320*10**8):int(0.58/320*10**8)]}).to_csv('laser_rit2_kort.csv')
+# pd.DataFrame({'time': tijd_kort[int(0.73/320*10**8):], 'afstand_laser': laserdata_kort[int(0.73/320*10**8):]}).to_csv('laser_rit3_kort.csv')

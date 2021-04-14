@@ -82,7 +82,7 @@ print(corr)
 b = float(vx_GPS[42]-vx_GPS[36] - np.sum(ax[36*100+1:42*100+1] + interpol(correction, corr, 600))*dt)
 print(b)
 correcties[36*100+1:42*100+1] = interpol(correction, corr, 600) + b/6
-    
+     
 ax_corr = ax[:-99] + correcties
 vx_corr = np.cumsum(ax_corr*dt) + vx0
 dx_corr = np.cumsum(vx_corr*dt)
@@ -97,19 +97,47 @@ plt.xlabel('tijd [min]')
 plt.ylabel('z-acceleratie [m/s²]')
 plt.show()
 
-contents = pd.read_csv('laser_rit1.csv')
+# contents = pd.read_csv('laser_rit1.csv')
+
+# time = contents[['time']].values.flatten()
+# laser_data = contents[['afstand_laser']].values.flatten()
+# time = time-time[0]
+
+# ### versnellingsdata is 253.99 s lang
+
+# eindt = 8.6297
+# eindsample = int(eindt*60*32000)    # 32000 samples per seconde
+# beginsample = int((eindt*60 - 253.99)*32000)
+
+contents = pd.read_csv('laser_rit1_kort.csv') # Ik gebruik hier de 100 hertz versie van de laserdata zodat dt gelijk is aan de dt van de acceleratie en de snelheid
 
 time = contents[['time']].values.flatten()
 laser_data = contents[['afstand_laser']].values.flatten()
 time = time-time[0]
 
-### versnellingsdata is 253.99 s lang
+# correlatie = np.correlate(laser_data,vx_corr,"valid") # snelheids correlatie, lijkt niet zo intressant
+correlatie = np.correlate(laser_data-np.average(laser_data),az[:-70]-np.average(az[:-70]),"valid") # de laatste 70 waarden van az zijn nan
+plt.figure(figsize=(16,9))
+plt.plot(correlatie/np.max(correlatie))
+plt.show()
 
-eindt = 8.6297
-eindsample = int(eindt*60*32000)    # 32000 samples per seconde
-beginsample = int((eindt*60 - 253.99)*32000)
+#beginsample = np.argmax(correlatie)
+beginsample = 26364 # index die overeenkomt met de 2de hoogste piek
+#eindsample = beginsample + len(vx_corr)
+eindsample = beginsample + len(az) - 70
+
+
 tijd = time[beginsample:eindsample]-time[beginsample:eindsample][0]
 datalaser = laser_data[beginsample:eindsample]
+
+plt.figure(figsize=(16,9))
+plt.plot(tijd/60, (datalaser[0]-datalaser)/10+10, label='opgemeten laserdata')  # +10 is simpelweg om de laserdata en versnellingsdata beter te kunnen vergelijken, heeft geen fysische betekenis
+plt.plot(t/60, vx_corr, label='opgemeten snelheid')
+plt.legend()
+plt.xlabel('tijd [min]')
+plt.ylabel('afstand [cm], snelheid [m/s]')
+plt.title('laserdata overeenkomstig met snelheidsdata')
+plt.show()
 
 plt.figure(figsize=(16,9))
 plt.plot(tijd/60, (datalaser[0]-datalaser)/10+10, label='opgemeten laserdata')  # +10 is simpelweg om de laserdata en versnellingsdata beter te kunnen vergelijken, heeft geen fysische betekenis
