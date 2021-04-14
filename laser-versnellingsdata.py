@@ -10,13 +10,13 @@ name = 'xyz_Zwijnaarde' + '3' + '.csv'
 contents = pd.read_csv(name)
 
 accel_x = contents[['a_x']].values.flatten()
-ax = 9.81*accel_x
+ax = 9.81*accel_x[:-100]    # in de laatste seconde zijn de metingen van de accelerometer onvolledig
 accel_z = contents[['a_z']].values.flatten()
-az = 9.81*accel_z
+az = 9.81*accel_z[:-100]
 
 bestandsnaam = 'D:\\UGent docs\\VOP_docs\\Data testrit Zwijnaarde\\158033857_' + '3' + '.csv'
 
-vx_GPS = pd.read_csv(bestandsnaam)[['GPSau-speed']].values.flatten()*5/18
+vx_GPS = pd.read_csv(bestandsnaam)[['GPSau-speed']].values.flatten()[:-1]*5/18
 lengtegraad = pd.read_csv(bestandsnaam)[['GPSau-lon']].values.flatten()
 breedtegraad = pd.read_csv(bestandsnaam)[['GPSau-lat']].values.flatten()
 index = next(i for i,v in enumerate(lengtegraad) if v != 0) # seconden waar GPS niet meet wegdoen
@@ -120,7 +120,7 @@ laser_data = contents[['afstand_laser']].values.flatten()
 time = time-time[0]
 
 # correlatie = np.correlate(laser_data,vx_corr,"valid") # snelheids correlatie, lijkt niet zo intressant
-correlatie = np.correlate(laser_data-np.average(laser_data),az[:-70]-np.average(az[:-70]),"valid") # de laatste 70 waarden van az zijn nan
+correlatie = np.correlate(laser_data-np.average(laser_data),az-np.average(az),"valid")
 plt.figure(figsize=(16,9))
 plt.plot(correlatie/np.max(correlatie))
 plt.show()
@@ -128,7 +128,7 @@ plt.show()
 #beginsample = np.argmax(correlatie)
 beginsample = 26364 # index die overeenkomt met de 2de hoogste piek
 #eindsample = beginsample + len(vx_corr)
-eindsample = beginsample + len(az) - 70
+eindsample = beginsample + len(az)
 
 
 tijd = time[beginsample:eindsample]-time[beginsample:eindsample][0]
@@ -169,4 +169,48 @@ plt.legend()
 plt.xlabel('tijd [sec]')
 plt.ylabel('afstand [cm], versnelling [m/s²]')
 plt.title('laserdata overeenkomstig met versnellingsdata')
+plt.show()
+
+### versnellingsdata plotten met de 32 kHz laserdata
+
+contents = pd.read_csv('laser_rit1.csv')
+
+time = contents[['time']].values.flatten()
+laser_data = contents[['afstand_laser']].values.flatten()
+time = time-time[0]
+
+beginsample = int(beginsample*320)
+eindsample = int(eindsample*320)    # 32000 samples per seconde
+tijd = time[beginsample:eindsample]-time[beginsample:eindsample][0]
+datalaser = laser_data[beginsample:eindsample]
+
+lettergrootte = 20
+plt.figure(figsize=(16,9))
+plt.plot(tijd/60, (datalaser[0]-datalaser)/10+6, label='opgemeten laserdata')
+plt.plot(t/60, az, label='opgemeten versnelling')
+plt.legend(fontsize=lettergrootte)
+plt.xlabel('tijd [min]', fontsize=lettergrootte)
+plt.ylabel('afstand [cm], versnelling [m/s²]', fontsize=lettergrootte)
+plt.title('laserdata overeenkomstig met versnellingsdata', fontsize=lettergrootte)
+plt.show()
+
+### laserafstand in functie van afgelegde afstand
+
+dx_pol = [dx_corr[0]]
+t_pol = [t[0]]
+for i in range(len(dx_corr)-1):
+    dx_extra = interpol(dx_corr[i], dx_corr[i+1], 320)
+    t_extra = interpol(t[i], t[i+1], 320)
+    dx_pol += list(dx_extra)
+    t_pol += list(t_extra)
+dx_pol = np.array(dx_pol)
+t_pol = np.array(t_pol)
+
+laser_afstand = datalaser[:-31999]
+
+plt.figure(figsize=(16,9))
+plt.plot(dx_pol, (laser_afstand[0]-laser_afstand)/10)
+plt.title('wegprofiel in functie van de afstand', fontsize=lettergrootte)
+plt.xlabel('afstand [m]', fontsize=lettergrootte)
+plt.ylabel('gemeten afstand ten opzichte van wegdek [cm]', fontsize=lettergrootte)
 plt.show()
