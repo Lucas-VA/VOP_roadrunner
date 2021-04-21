@@ -214,3 +214,15 @@ plt.title('wegprofiel in functie van de afstand', fontsize=lettergrootte)
 plt.xlabel('afstand [m]', fontsize=lettergrootte)
 plt.ylabel('gemeten afstand ten opzichte van wegdek [cm]', fontsize=lettergrootte)
 plt.show()
+
+flinearlaser = interpolate.interp1d(dx_pol, laserafstand)
+fcubiclaser = interpolate.interp1d(dx_pol, laserafstand, kind='cubic')
+
+dx_new = np.arange(1,dx_corr[-1],0.1) #Het laaste argument is de afgelegede afstand tussen samples dx
+
+linearlaser = flinearlaser(dx_new)
+cubiclaser = fcubiclaser(dx_new)
+
+plt.figure(figsize=(16,9))
+plt.plot(dx_new, linearlaser)
+plt.show()
