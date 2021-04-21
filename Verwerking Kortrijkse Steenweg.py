@@ -116,8 +116,29 @@ time = contents[['time']].values.flatten()
 laser_data = contents[['afstand_laser']].values.flatten()
 time = time-time[0]
 print(time[-1])
-correlatie = np.correlate(laser_data-np.average(laser_data),az_laser-np.average(az_laser),"valid")
+# kruiscorrelatie werkt niet met az_laser om de een of andere reden
+correlatie = np.correlate((laser_data-np.average(laser_data))/max(np.abs(laser_data-np.average(laser_data))), (az_Dick-np.average(az_Dick))/max(np.abs(az_Dick-np.average(az_Dick))), "valid")
+print(az_laser[:20])
 
 plt.figure(figsize=(16,9))
-plt.plot(correlatie/np.max(correlatie))
+plt.plot(np.abs(correlatie)/max(np.abs(correlatie)))
+plt.show()
+
+### als tijd in laserbestand klopt dan verwachten we een zeer vroege piek: laserbestand begint op 13:21:05.8 en versnellingsbestand op 13:21:07 
+
+maxindex = int(np.where(np.abs(correlatie[:200]) == max(np.abs(correlatie[:200])))[0])
+print(maxindex) # is 1.4 seconden, komt overeen met de verwachting
+lengte = len(az_laser)
+laser_rit = laser_data[maxindex:maxindex+lengte]
+time_rit = time[maxindex:maxindex+lengte]
+wegafstand = laser_data[420]
+
+plt.figure(figsize=(16,9))
+plt.plot(time_rit, wegafstand - laser_rit, label='opgemeten laserdata')
+plt.plot(t, az_laser, label='verticale versnelling in lasernode')
+plt.plot(t, az_Dick, label='verticale versnelling in Dick node')
+plt.legend()
+plt.xlabel('tijd [s]')
+plt.ylabel('afstand [mm], versnelling [m/s²]')
+plt.title('laserdata 100Hz')
 plt.show()
