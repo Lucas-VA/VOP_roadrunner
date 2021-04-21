@@ -120,6 +120,12 @@ print(time[-1])
 correlatie = np.correlate((laser_data-np.average(laser_data))/max(np.abs(laser_data-np.average(laser_data))), (az_Dick-np.average(az_Dick))/max(np.abs(az_Dick-np.average(az_Dick))), "valid")
 print(az_laser[:20])
 
+checknan = np.isnan(az_laser)
+value = np.sum(checknan)
+nans = np.where(checknan)
+print(value, nans)
+### laatste 77 waarden van az_laser zijn nan -> verklaring waarom correlate niet werkt
+
 plt.figure(figsize=(16,9))
 plt.plot(np.abs(correlatie)/max(np.abs(correlatie)))
 plt.show()
