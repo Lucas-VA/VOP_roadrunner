@@ -109,3 +109,15 @@ plt.title('Snelheid in de eerste {} seconden van Kortrijkse Steenweg'.format(k))
 plt.show()
 
 ### lasermetingen verwerken
+#### kruiscorrelatie
+contents = pd.read_csv('laser_KortSt_kort.csv') # 100 hertz versie van de laserdata zodat dt gelijk is aan de dt van de acceleratie en de snelheid
+
+time = contents[['time']].values.flatten()
+laser_data = contents[['afstand_laser']].values.flatten()
+time = time-time[0]
+print(time[-1])
+correlatie = np.correlate(laser_data-np.average(laser_data),az_laser-np.average(az_laser),"valid")
+
+plt.figure(figsize=(16,9))
+plt.plot(correlatie/np.max(correlatie))
+plt.show()
