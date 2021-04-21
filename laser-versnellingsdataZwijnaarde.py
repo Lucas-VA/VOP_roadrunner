@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 def interpol(y1, y2, intervallen):
     t_interval = (np.arange(intervallen)+1)/intervallen
@@ -215,8 +216,8 @@ plt.xlabel('afstand [m]', fontsize=lettergrootte)
 plt.ylabel('gemeten afstand ten opzichte van wegdek [cm]', fontsize=lettergrootte)
 plt.show()
 
-flinearlaser = interpolate.interp1d(dx_pol, laserafstand)
-fcubiclaser = interpolate.interp1d(dx_pol, laserafstand, kind='cubic')
+flinearlaser = interp1d(dx_pol, laser_afstand)
+fcubiclaser = interp1d(dx_pol, laser_afstand, kind='cubic')
 
 dx_new = np.arange(1,dx_corr[-1],0.1) #Het laaste argument is de afgelegede afstand tussen samples dx
 
