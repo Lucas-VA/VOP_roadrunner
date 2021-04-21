@@ -29,25 +29,7 @@ for k in range(104):
 
 laserdata_flat = np.array(laserdata_flat)
 
-data0 = pd.read_csv('D:\\UGent docs\\VOP_docs\\laserdata\\0.txt',
-                       sep=" ",
-                       header=None, 
-                       delimiter = "\t")
-data0 = data0.values
-
-uur0 = float(data0[0,2][11:13])
-minuut0 = float(data0[0,2][14:16])
-seconde0 = float(data0[0,2][17:])
-t_0 = uur0*3600 + minuut0*60 + seconde0
-
-uur_eind = float(data[-1,2][11:13])
-minuut_eind = float(data[-1,2][14:16])
-seconde_eind = float(data[-1,2][17:])
-t_eind = uur_eind*3600 + minuut_eind*60 + seconde_eind + 1/320
-
-delta_t = t_eind - t_0
-
-time = np.arange(len(laserdata_flat))/(len(laserdata_flat)-1)*delta_t
+time = np.arange(len(laserdata_flat))/32000     # gebruik sample frequentie als maat voor de tijd, de tijd in de tekstbestanden komt van de Raspberry Pi en is niet altijd correct
 
 # pd.DataFrame({'time': time[int(0.08*10**8):int(0.27*10**8)], 'afstand_laser': laserdata_flat[int(0.08*10**8):int(0.27*10**8)]}).to_csv('laser_rit1.csv')  # maakt csv bestand aan van de eerste laserrit
 # pd.DataFrame({'time': time[int(0.34*10**8):int(0.58*10**8)], 'afstand_laser': laserdata_flat[int(0.34*10**8):int(0.58*10**8)]}).to_csv('laser_rit2.csv')  #csv bestand voor rit 2 en 3, niet zinvol want daar is te weinig GPS data voor
