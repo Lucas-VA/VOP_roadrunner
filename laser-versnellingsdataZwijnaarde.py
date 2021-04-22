@@ -137,7 +137,7 @@ datalaser = laser_data[beginsample:eindsample]
 
 plt.figure(figsize=(16,9))
 plt.plot(tijd/60, (datalaser[0]-datalaser)/10+10, label='opgemeten laserdata')  # +10 is simpelweg om de laserdata en versnellingsdata beter te kunnen vergelijken, heeft geen fysische betekenis
-plt.plot(t/60, vx_corr, label='opgemeten snelheid')
+plt.plot(t[:-99]/60, vx_corr, label='opgemeten snelheid')
 plt.legend()
 plt.xlabel('tijd [min]')
 plt.ylabel('afstand [cm], snelheid [m/s]')
@@ -156,8 +156,8 @@ plt.show()
 ### ingezoomd tussen minuut 3.3 en 3.8
 sec1 = 3.3*60
 sec2 = 3.8*60
-slice1 = int(sec1*32000)
-slice2 = int(sec2*32000)
+slice1 = int(sec1*100)
+slice2 = int(sec2*100)
 tijd_zoom = tijd[slice1:slice2]
 datalaser_zoom = datalaser[slice1:slice2]
 t_zoom = t[int(sec1*100):int(sec2*100)]
@@ -219,11 +219,12 @@ plt.show()
 flinearlaser = interp1d(dx_pol, laser_afstand)
 fcubiclaser = interp1d(dx_pol, laser_afstand, kind='cubic')
 
-dx_new = np.arange(1,dx_corr[-1],0.1) #Het laaste argument is de afgelegede afstand tussen samples dx
+dx_new = np.arange(1,dx_corr[-1],0.01) #Het laaste argument is de afgelegede afstand tussen samples dx
 
 linearlaser = flinearlaser(dx_new)
 cubiclaser = fcubiclaser(dx_new)
 
 plt.figure(figsize=(16,9))
 plt.plot(dx_new, linearlaser)
+plt.plot(dx_new, cubiclaser)
 plt.show()
