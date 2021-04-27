@@ -36,8 +36,8 @@ eindint = int(np.where(time_Dick == eindt)[0])
 vx_GPS = bestand_laser[['GPSshort-speed']].values.flatten()
 vx_GPS_Dick = bestand_Dick[['GPSau-speed']].values.flatten()[beginint:eindint+1+1200]*5/18
 
-ax_Dick = ax_Dick[beginint*100+500:(eindint+1)*100+120000+500]   # versnellingsdata loopt 5 seconden achter op GPS data voor de een of andere reden
-az_Dick = az_Dick[beginint*100+500:(eindint+1)*100+120000+500]
+ax_Dick = ax_Dick[beginint*100+400:(eindint+1)*100+120000+400]   # versnellingsdata loopt 4 seconden achter op GPS data voor de een of andere reden
+az_Dick = az_Dick[beginint*100+400:(eindint+1)*100+120000+400]
 
 t_laser = np.arange(len(ax_laser))/100.0
 t_Dick = np.arange(len(ax_Dick))/100.0
@@ -53,8 +53,8 @@ plt.title('z-acceleratie in functie van de tijd, Kortrijkse Steenweg')
 plt.xlabel('tijd [s]')
 plt.ylabel('z-acceleratie [m/s²]')
 plt.show()
-sec3 = 51800    # offset = 518s - 245s = 273s
-sec4 = 53800
+sec3 = 51900    # offset = 519s - 245s = 274s
+sec4 = 53900
 plt.figure()
 plt.plot(t_Dick[sec3:sec4], az_Dick[sec3:sec4], label='verticale versnelling in Dick node', color='tab:orange')
 plt.legend()
@@ -64,7 +64,7 @@ plt.ylabel('z-acceleratie [m/s²]')
 plt.show()
 
 ### z-acceleratie vergelijken
-offset = 27300
+offset = 27400
 eindint = len(az_laser)+offset
 plt.figure()
 plt.title('Snelheid in functie van de tijd, Kortrijkse Steenweg')
@@ -114,7 +114,7 @@ vx_corr = np.cumsum(ax_corr*dt) + vx0
 dx_corr = np.cumsum(vx_corr*dt)
 dx_GPS_Dick = np.cumsum(vx_GPS_Dick*1)
 
-### bewijs dat versnellingsdata van Dick node 5 seconden achterloopt op zijn GPS-snelheden
+### bewijs dat versnellingsdata van Dick node 4 seconden achterloopt op zijn GPS-snelheden
 k = 40
 dt = 1/100
 plt.figure(figsize=(16,6))
@@ -126,6 +126,19 @@ plt.xlabel('tijd [s]')
 plt.ylabel('snelheid [m/s]')
 plt.title('Snelheid in de eerste {} seconden van Kortrijkse Steenweg'.format(k))
 plt.show()
+
+k1 = 230
+k2 = 270
+plt.figure(figsize=(16,9))
+plt.plot(t[k1*100:k2*100], ax_Dick[k1*100:k2*100], label='gemeten versnelling')
+plt.plot(t[k1*100:k2*100], ax_corr[k1*100:k2*100], label='gecorrigeerde versnelling')
+plt.legend()
+plt.xlabel('tijd [s]')
+plt.ylabel('versnelling [m/s²]')
+plt.title('Versnelling na geïnterpoleerde correctie per seconde + constante waarde')
+plt.show()
+
+### Correcties op versnelling verbeteren, vooral tussen 230s en 250s en tussen 265s en 270s
 
 ### lasermetingen verwerken
 #### kruiscorrelatie
