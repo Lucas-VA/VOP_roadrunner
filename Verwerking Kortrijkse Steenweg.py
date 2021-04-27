@@ -109,6 +109,32 @@ for i in range(1, len(vx_GPS)):
 #         correcties += list(interpol(correcties[-1], corr, 100))
 correcties = np.array(correcties)
 
+### Correcties op versnelling verbeteren, vooral tussen 232s en 243s, tussen 245s en 247s en tussen 265s en 270s
+
+correcties[232*100+1:233*100+1] = interpol(corrections[232], corrections[234], 100)
+
+correcties[236*100+1:238*100+1] = interpol(corrections[236], corrections[238], 200)
+
+x1 = 239
+x2 = 241
+corr = float(vx_GPS_Dick[x2]-vx_GPS_Dick[x1]-np.sum(ax_Dick[x1*100+1:x2*100+1])*dt)
+b = float(vx_GPS_Dick[x2]-vx_GPS_Dick[x1]-np.sum(ax_Dick[x1*100+1:x2*100+1] + interpol(corrections[x1], corr, (x2-x1)*100))*dt)
+correcties[x1*100+1:x2*100+1] = interpol(corrections[x1], corr, (x2-x1)*100) + b/(x2-x1)
+
+x1 = 241
+x2 = 243
+corr = float(vx_GPS_Dick[x2]-vx_GPS_Dick[x1]-np.sum(ax_Dick[x1*100+1:x2*100+1])*dt)
+b = float(vx_GPS_Dick[x2]-vx_GPS_Dick[x1]-np.sum(ax_Dick[x1*100+1:x2*100+1] + interpol(corrections[x1], corr, (x2-x1)*100))*dt)
+correcties[x1*100+1:(x2-1)*100+1] = interpol(corrections[x1], corr, (x2-x1)*100)[:100] + b/(x2-x1)
+
+correcties[242*100+1:243*100+1] = interpol(interpol(corrections[x1], corr, (x2-x1)*100)[100], corrections[243], 100)
+
+x1 = 245
+x2 = 249
+corr = float(vx_GPS_Dick[x2]-vx_GPS_Dick[x1]-np.sum(ax_Dick[x1*100+1:x2*100+1])*dt)
+b = float(vx_GPS_Dick[x2]-vx_GPS_Dick[x1]-np.sum(ax_Dick[x1*100+1:x2*100+1] + interpol(corrections[x1], corr, (x2-x1)*100))*dt)
+correcties[x1*100+1:x2*100+1] = interpol(corrections[x1], corr, (x2-x1)*100) + b/(x2-x1)
+
 ax_corr = ax_Dick[:-99] + correcties
 vx_corr = np.cumsum(ax_corr*dt) + vx0
 dx_corr = np.cumsum(vx_corr*dt)
@@ -129,16 +155,25 @@ plt.show()
 
 k1 = 230
 k2 = 270
-plt.figure(figsize=(16,9))
-plt.plot(t[k1*100:k2*100], ax_Dick[k1*100:k2*100], label='gemeten versnelling')
-plt.plot(t[k1*100:k2*100], ax_corr[k1*100:k2*100], label='gecorrigeerde versnelling')
-plt.legend()
-plt.xlabel('tijd [s]')
-plt.ylabel('versnelling [m/s²]')
-plt.title('Versnelling na geïnterpoleerde correctie per seconde + constante waarde')
+
+major_ticks = np.arange(k1, k2+1, 5)
+minor_ticks = np.arange(k1, k2+1, 1)
+
+fig = plt.figure(figsize=(16,9))
+ax = fig.add_subplot(1, 1, 1)
+
+ax.plot(t[k1*100:k2*100], ax_Dick[k1*100:k2*100], label='gemeten versnelling')
+ax.plot(t[k1*100:k2*100], ax_corr[k1*100:k2*100], label='gecorrigeerde versnelling')
+ax.legend()
+ax.set_xlabel('tijd [s]')
+ax.set_ylabel('versnelling [m/s²]')
+ax.set_title('Versnelling na geïnterpoleerde correctie per seconde + constante waarde')
+ax.set_xticks(major_ticks)
+ax.set_xticks(minor_ticks, minor=True)
+ax.grid(which='both')
 plt.show()
 
-### Correcties op versnelling verbeteren, vooral tussen 230s en 250s en tussen 265s en 270s
+
 
 ### lasermetingen verwerken
 #### kruiscorrelatie
