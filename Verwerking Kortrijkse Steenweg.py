@@ -11,9 +11,9 @@ def interpol(y1, y2, intervallen):
 contents = pd.read_csv('xyz_KortSt.csv')
 
 accel_x = contents[['a_x']].values.flatten()
-ax_laser = 9.81*accel_x
+ax_laser = 9.81*accel_x[:-100]  # in laatste seconden zitten er NaN values tussen
 accel_z = contents[['a_z']].values.flatten()
-az_laser = 9.81*accel_z
+az_laser = 9.81*accel_z[:-100]
 
 contents = pd.read_csv('xyz_Dick.csv')
 
@@ -34,42 +34,61 @@ beginint = int(np.where(time_Dick == begint)[0])
 eindint = int(np.where(time_Dick == eindt)[0])
 
 vx_GPS = bestand_laser[['GPSshort-speed']].values.flatten()
-vx_GPS_Dick = bestand_Dick[['GPSau-speed']].values.flatten()[beginint:eindint+1]*5/18
+vx_GPS_Dick = bestand_Dick[['GPSau-speed']].values.flatten()[beginint:eindint+1+1200]*5/18
 
-ax_Dick = ax_Dick[beginint*100+500:(eindint+1)*100+500]   # versnellingsdata loopt 5 seconden achter op GPS data voor de een of andere reden
-az_Dick = az_Dick[beginint*100+500:(eindint+1)*100+500]
+ax_Dick = ax_Dick[beginint*100+500:(eindint+1)*100+120000+500]   # versnellingsdata loopt 5 seconden achter op GPS data voor de een of andere reden
+az_Dick = az_Dick[beginint*100+500:(eindint+1)*100+120000+500]
 
-t = np.arange(len(ax_laser))/100.0
-t_GPS = np.arange(len(vx_GPS))
+t_laser = np.arange(len(ax_laser))/100.0
+t_Dick = np.arange(len(ax_Dick))/100.0
+t_GPS = np.arange(len(vx_GPS_Dick))
 
-lettergrootte = 20
-plt.figure(figsize=(16,9))
-plt.title('Snelheid in functie van de tijd, Kortrijkse Steenweg', fontsize=lettergrootte)
-plt.plot(t_GPS/60, vx_GPS*18/5, label='GPS-snelheid lasernode')
-plt.plot(t_GPS/60, vx_GPS_Dick*18/5, label='GPS-snelheid Dick node')
-plt.legend()
-#plt.axis([0,np.max(t[:-100]/60)+0.5, 0, np.max(vx_corr*18/5)+5])
-plt.xticks(fontsize=lettergrootte)
-plt.yticks(fontsize=lettergrootte)
-plt.xlabel('tijd [min]', fontsize=lettergrootte)
-plt.ylabel('snelheid [km/h]', fontsize=lettergrootte)
-plt.show()
-
-### komt goed overeen
-
-### z-acceleratie vergelijken
-sec1 = 0
-sec2 = int(t[-1])
-plt.figure(figsize=(9,6))
-plt.plot(t[sec1*100:sec2*100]/60, az_laser[sec1*100:sec2*100], label='verticale versnelling in lasernode')
-plt.plot(t[sec1*100:sec2*100]/60, az_Dick[sec1*100:sec2*100], label='verticale versnelling in Dick node', color='tab:orange')
+### stuk op snelheid = 0
+sec1 = 24500
+sec2 = 26500
+plt.figure()
+plt.plot(t_laser[sec1:sec2], az_laser[sec1:sec2], label='verticale versnelling in lasernode')
 plt.legend()
 plt.title('z-acceleratie in functie van de tijd, Kortrijkse Steenweg')
-plt.xlabel('tijd [min]')
+plt.xlabel('tijd [s]')
 plt.ylabel('z-acceleratie [m/s²]')
 plt.show()
-### opvallend lage waarden van z-versnelling in lasernode tussen 3.9 en 4.5 minuten en in Dicknode tussen 3 en 3.6 minuten
+sec3 = 51800    # offset = 518s - 245s = 273s
+sec4 = 53800
+plt.figure()
+plt.plot(t_Dick[sec3:sec4], az_Dick[sec3:sec4], label='verticale versnelling in Dick node', color='tab:orange')
+plt.legend()
+plt.title('z-acceleratie in functie van de tijd, Kortrijkse Steenweg')
+plt.xlabel('tijd [s]')
+plt.ylabel('z-acceleratie [m/s²]')
+plt.show()
+
+### z-acceleratie vergelijken
+offset = 27300
+eindint = len(az_laser)+offset
+plt.figure()
+plt.title('Snelheid in functie van de tijd, Kortrijkse Steenweg')
+plt.plot(t_GPS[int(offset/100):int(eindint/100)], vx_GPS_Dick[int(offset/100):int(eindint/100)]*18/5, label='GPS-snelheid Dick node')
+plt.xlabel('tijd [s]')
+plt.ylabel('snelheid [km/h]')
+plt.show()
+
+plt.figure()
+plt.plot(t_laser, az_laser, label='verticale versnelling in lasernode')
+plt.plot(t_laser, az_Dick[offset:eindint], label='verticale versnelling in Dick node', color='tab:orange')
+plt.legend()
+plt.title('z-acceleratie in functie van de tijd, Kortrijkse Steenweg')
+plt.xlabel('tijd [s]')
+plt.ylabel('z-acceleratie [m/s²]')
+plt.show()
 ### versnelling van laser-node ondervindt te veel invloed van trillingen constructie -> versnelling en GPS-snelheid van Dick node gebruiken voor afstandsprofiel
+
+### herdefinieer de snelheid en versnelling in de Dick node
+vx_GPS_Dick = vx_GPS_Dick[int(offset/100):int(eindint/100)]
+t_GPS = np.arange(len(vx_GPS_Dick))
+az_Dick = az_Dick[offset:eindint]
+ax_Dick = ax_Dick[offset:eindint]
+# t_Dick is nu gewoon gelijk aan t_laser
 
 ### correctie op versnelling
 
