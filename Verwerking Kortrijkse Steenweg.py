@@ -218,3 +218,30 @@ plt.xlabel('tijd [s]')
 plt.ylabel('afstand [mm], versnelling [m/s²]')
 plt.title('laserdata 100Hz')
 plt.show()
+
+
+### gemeten afstand corrigeren
+
+### kijken in eerste x/100 seconden
+
+x = 10000
+
+g = np.mean(az_laser[24600:26500]) # gemeten z-acceleratie in laser node in rust
+
+az_corr = az_laser[:x]-g
+
+plt.plot(t[:x], az_corr)
+plt.show()
+
+snelh_corr = integrate.cumtrapz(az_corr, dx=1/100.0, initial=0)
+afstand_corr = integrate.cumtrapz(snelh_corr, dx=1/100.0, initial=0)
+
+plt.plot(t[:x], afstand_corr)
+plt.show()
+
+plt.plot(t[:x], wegafstand - laser_rit[:x], label='gemeten afstand tov wegdek')
+plt.plot(t[:x], wegafstand - (laser_rit[:x]+afstand_corr), label='afstand tov wegdek na correctie')
+plt.xlabel('tijd [s]')
+plt.ylabel('afstand tov wegdek [mm]')
+plt.legend()
+plt.show()
