@@ -182,29 +182,32 @@ contents = pd.read_csv('laser_KortSt_kort.csv') # 100 hertz versie van de laserd
 time = contents[['time']].values.flatten()
 laser_data = contents[['afstand_laser']].values.flatten()
 time = time-time[0]
-print(time[-1])
-# kruiscorrelatie werkt niet met az_laser om de een of andere reden
-correlatie = np.correlate((laser_data-np.average(laser_data))/max(np.abs(laser_data-np.average(laser_data))), (az_Dick-np.average(az_Dick))/max(np.abs(az_Dick-np.average(az_Dick))), "valid")
-print(az_laser[:20])
+wegafstand = np.mean(laser_data[29000:30400])
 
-checknan = np.isnan(az_laser)
-value = np.sum(checknan)
-nans = np.where(checknan)
-print(value, nans)
-### laatste 77 waarden van az_laser zijn nan -> verklaring waarom correlate niet werkt
+### zoek naar stuk van 20 seconden waar constante afstand wordt gemeten -> tussen 283 en 304 seconden voor laserdata, voor versnellingsdata tussen 245s en 265s
+# verwachte verschuiving: 39s = 3900 samples
+plt.figure(figsize=(16,9))
+plt.plot(time[28200:30500], wegafstand - laser_data[28200:30500], label='afstand tov het wegdek')
+plt.legend()
+plt.xlabel('tijd [s]')
+plt.ylabel('afstand [mm]')
+plt.title('laserdata 100Hz')
+plt.show()
+
+correlatie = np.correlate((wegafstand-laser_data)/max(np.abs(wegafstand-laser_data)), (az_Dick-np.average(az_Dick))/max(np.abs(az_Dick-np.average(az_Dick))), "valid")
 
 plt.figure(figsize=(16,9))
-plt.plot(np.abs(correlatie)/max(np.abs(correlatie)))
+plt.plot(correlatie/max(np.abs(correlatie)))
 plt.show()
 
 ### als tijd in laserbestand klopt dan verwachten we een zeer vroege piek: laserbestand begint op 13:21:05.8 en versnellingsbestand op 13:21:07 
 
-maxindex = int(np.where(np.abs(correlatie[:200]) == max(np.abs(correlatie[:200])))[0])
-print(maxindex) # is 1.4 seconden, komt overeen met de verwachting
+maxindex = int(np.where(np.abs(correlatie) == max(np.abs(correlatie)))[0])
+
+print(maxindex) # komt overeen met de verwachting
 lengte = len(az_laser)
 laser_rit = laser_data[maxindex:maxindex+lengte]
-time_rit = time[maxindex:maxindex+lengte]
-wegafstand = laser_data[420]
+time_rit = time[maxindex:maxindex+lengte]-time[maxindex:maxindex+lengte][0]
 
 plt.figure(figsize=(16,9))
 plt.plot(time_rit, wegafstand - laser_rit, label='opgemeten laserdata')
