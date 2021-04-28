@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.integrate as integrate
 
 def interpol(y1, y2, intervallen):
     t_interval = (np.arange(intervallen)+1)/intervallen
@@ -99,7 +100,7 @@ correcties = [0.0]
 
 dt = 1/100
 
-for i in range(1, len(vx_GPS)):
+for i in range(1, len(vx_GPS_Dick)):
     corr = float(vx_GPS_Dick[i]-vx_GPS_Dick[i-1]-np.sum(ax_Dick[(i-1)*100+1:i*100+1])*dt)
     b = float(vx_GPS_Dick[i]-vx_GPS_Dick[i-1]-np.sum(ax_Dick[(i-1)*100+1:i*100+1]+interpol(corrections[-1], corr, 100))*dt)
     correcties += list(interpol(corrections[-1], corr, 100)+b)
@@ -162,8 +163,8 @@ minor_ticks = np.arange(k1, k2+1, 1)
 fig = plt.figure(figsize=(16,9))
 ax = fig.add_subplot(1, 1, 1)
 
-ax.plot(t[k1*100:k2*100], ax_Dick[k1*100:k2*100], label='gemeten versnelling')
-ax.plot(t[k1*100:k2*100], ax_corr[k1*100:k2*100], label='gecorrigeerde versnelling')
+ax.plot(t_laser[k1*100:k2*100], ax_Dick[k1*100:k2*100], label='gemeten versnelling')
+ax.plot(t_laser[k1*100:k2*100], ax_corr[k1*100:k2*100], label='gecorrigeerde versnelling')
 ax.legend()
 ax.set_xlabel('tijd [s]')
 ax.set_ylabel('versnelling [m/s²]')
@@ -211,8 +212,8 @@ time_rit = time[maxindex:maxindex+lengte]-time[maxindex:maxindex+lengte][0]
 
 plt.figure(figsize=(16,9))
 plt.plot(time_rit, wegafstand - laser_rit, label='opgemeten laserdata')
-plt.plot(t, az_laser, label='verticale versnelling in lasernode')
-plt.plot(t, az_Dick, label='verticale versnelling in Dick node')
+plt.plot(t_laser, az_laser, label='verticale versnelling in lasernode')
+plt.plot(t_laser, az_Dick, label='verticale versnelling in Dick node')
 plt.legend()
 plt.xlabel('tijd [s]')
 plt.ylabel('afstand [mm], versnelling [m/s²]')
@@ -230,17 +231,17 @@ g = np.mean(az_laser[24600:26500]) # gemeten z-acceleratie in laser node in rust
 
 az_corr = az_laser[:x]-g
 
-plt.plot(t[:x], az_corr)
+plt.plot(t_laser[:x], az_corr)
 plt.show()
 
 snelh_corr = integrate.cumtrapz(az_corr, dx=1/100.0, initial=0)
 afstand_corr = integrate.cumtrapz(snelh_corr, dx=1/100.0, initial=0)
 
-plt.plot(t[:x], afstand_corr)
+plt.plot(t_laser[:x], afstand_corr)
 plt.show()
 
-plt.plot(t[:x], wegafstand - laser_rit[:x], label='gemeten afstand tov wegdek')
-plt.plot(t[:x], wegafstand - (laser_rit[:x]+afstand_corr), label='afstand tov wegdek na correctie')
+plt.plot(t_laser[:x], wegafstand - laser_rit[:x], label='gemeten afstand tov wegdek')
+plt.plot(t_laser[:x], wegafstand - (laser_rit[:x]+afstand_corr), label='afstand tov wegdek na correctie')
 plt.xlabel('tijd [s]')
 plt.ylabel('afstand tov wegdek [mm]')
 plt.legend()
