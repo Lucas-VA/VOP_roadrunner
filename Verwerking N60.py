@@ -35,11 +35,10 @@ beginint = int(np.where(time_Dick == begint)[0])
 eindint = int(np.where(time_Dick == eindt)[0])
 
 vx_GPS = bestand_laser[['GPSshort-speed']].values.flatten()
-vx_GPS_Dick = bestand_Dick[['GPSau-speed']].values.flatten()[beginint:eindint+1+1200]*5/18
+vx_GPS_Dick = bestand_Dick[['GPSau-speed']].values.flatten()[beginint:eindint+1]*5/18
 
 ax_Dick = ax_Dick[beginint*100:(eindint+1)*100]
 az_Dick = az_Dick[beginint*100:(eindint+1)*100]
-vx_GPS_Dick = vx_GPS_Dick[beginint:eindint+1]
 
 t_laser = np.arange(len(ax_laser))/100.0
 t_Dick = np.arange(len(ax_Dick))/100.0
