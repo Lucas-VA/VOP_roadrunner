@@ -203,7 +203,8 @@ plt.show()
 
 ### als tijd in laserbestand klopt dan verwachten we een zeer vroege piek: laserbestand begint op 13:21:05.8 en versnellingsbestand op 13:21:07 
 
-maxindex = int(np.where(np.abs(correlatie) == max(np.abs(correlatie)))[0])
+# maxindex = int(np.where(np.abs(correlatie) == max(np.abs(correlatie)))[0])
+maxindex = 3559
 
 print(maxindex) # komt overeen met de verwachting
 lengte = len(az_laser)
