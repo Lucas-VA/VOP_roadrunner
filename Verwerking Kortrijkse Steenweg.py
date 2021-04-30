@@ -57,7 +57,7 @@ plt.show()
 sec3 = 51900    # offset = 519s - 245s = 274s
 sec4 = 53900
 plt.figure()
-plt.plot(t_Dick[sec3:sec4], az_Dick[sec3:sec4], label='verticale versnelling in Dick node', color='tab:orange')
+plt.plot(t_Dick[sec3:sec4], az_Dick[sec3:sec4], label='verticale versnelling in koffernode', color='tab:orange')
 plt.legend()
 plt.title('z-acceleratie in functie van de tijd, Kortrijkse Steenweg')
 plt.xlabel('tijd [s]')
@@ -76,7 +76,7 @@ plt.show()
 
 plt.figure()
 plt.plot(t_laser, az_laser, label='verticale versnelling in lasernode')
-plt.plot(t_laser, az_Dick[offset:eindint], label='verticale versnelling in Dick node', color='tab:orange')
+plt.plot(t_laser, az_Dick[offset:eindint], label='verticale versnelling in koffernode', color='tab:orange')
 plt.legend()
 plt.title('z-acceleratie in functie van de tijd, Kortrijkse Steenweg')
 plt.xlabel('tijd [s]')
@@ -84,7 +84,7 @@ plt.ylabel('z-acceleratie [m/s²]')
 plt.show()
 ### versnelling van laser-node ondervindt te veel invloed van trillingen constructie -> versnelling en GPS-snelheid van Dick node gebruiken voor afstandsprofiel
 
-### herdefinieer de snelheid en versnelling in de Dick node
+### herdefinieer de snelheid en versnelling in de koffernode
 vx_GPS_Dick = vx_GPS_Dick[int(offset/100):int(eindint/100)]
 t_GPS = np.arange(len(vx_GPS_Dick))
 az_Dick = az_Dick[offset:eindint]
@@ -146,7 +146,7 @@ k = 40
 dt = 1/100
 plt.figure(figsize=(16,6))
 plt.plot(np.arange(len(ax_Dick[:k*100]))/100, np.cumsum(ax_Dick[:k*100]*dt)+vx0, label='Geïntegreerde versnelling')
-plt.plot(np.arange(len(vx_GPS_Dick[1:1+k])), vx_GPS_Dick[1:1+k], label='GPS snelheid Dick node')
+plt.plot(np.arange(len(vx_GPS_Dick[1:1+k])), vx_GPS_Dick[1:1+k], label='GPS snelheid koffernode')
 plt.legend()
 plt.grid()
 plt.xlabel('tijd [s]')
@@ -214,7 +214,7 @@ time_rit = time[maxindex:maxindex+lengte]-time[maxindex:maxindex+lengte][0]
 plt.figure(figsize=(16,9))
 plt.plot(time_rit, wegafstand - laser_rit, label='opgemeten laserdata')
 plt.plot(t_laser, az_laser, label='verticale versnelling in lasernode')
-plt.plot(t_laser, az_Dick, label='verticale versnelling in Dick node')
+plt.plot(t_laser, az_Dick, label='verticale versnelling in koffernode')
 plt.legend()
 plt.xlabel('tijd [s]')
 plt.ylabel('afstand [mm], versnelling [m/s²]')
