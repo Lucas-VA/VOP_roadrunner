@@ -44,6 +44,9 @@ t_laser = np.arange(len(ax_laser))/100.0
 t_Dick = np.arange(len(ax_Dick))/100.0
 t_GPS = np.arange(len(vx_GPS_Dick))
 
+GPS_lon = bestand_Dick[['GPSau-lon']].values.flatten()[beginint+274:beginint+574]   # lengte- en breedtegraad inlezen met offset al inbegrepen
+GPS_lat = bestand_Dick[['GPSau-lat']].values.flatten()[beginint+274:beginint+574]
+
 ### stuk op snelheid = 0
 sec1 = 24500
 sec2 = 26500
@@ -247,3 +250,113 @@ plt.xlabel('tijd [s]')
 plt.ylabel('afstand tov wegdek [mm]')
 plt.legend()
 plt.show()
+
+
+## Vanaf hier mean profile depth berekeningen
+
+# 32kHz data
+contents = pd.read_csv('laser_KortSt.csv') # 100 hertz versie van de laserdata zodat dt gelijk is aan de dt van de acceleratie en de snelheid
+
+time = contents[['time']].values.flatten()
+laser_full = contents[['afstand_laser']].values.flatten()
+time = time-time[0]
+
+laser_rit_full = laser_full[maxindex*320:(maxindex+lengte)*320]
+time_rit = time[maxindex*320:(maxindex+lengte)*320]-time[maxindex*320:(maxindex+lengte)*320][0]
+
+dx_pol = [dx_corr[0]]
+print(dx_pol)
+t_pol = [t[0]]
+for i in range(len(dx_corr)-1):
+    dx_extra = interpol(dx_corr[i], dx_corr[i+1], 320)
+    t_extra = interpol(t[i], t[i+1], 320)
+    dx_pol += list(dx_extra)
+    t_pol += list(t_extra)
+dx_pol = np.array(dx_pol)
+t_pol = np.array(t_pol)
+
+### stuk van stilstand wegwerken
+
+laser_goed = laser_rit_full[:232*32000]
+dx_pol_goed = dx_pol[:232*32000]
+
+### laserdata in functie van afstand
+
+flinearlaser = interpolate.interp1d(dx_pol_goed - dx_pol_goed[0], laser_goed)
+
+dx_new = np.arange(0, dx_pol_goed[-1]-dx_pol_goed[0], 0.0005) # Het laaste argument is de afgelegede afstand tussen samples dx
+
+linearlaser = flinearlaser(dx_new)
+
+### lengte- en breedtegraad ook naar 32kHz brengen, is makkelijker voor te synchroniseren
+
+lon_pol = [GPS_lon[0]]
+t_pol = [t[0]]
+for i in range(len(GPS_lon)-1):
+    extra = interpol(GPS_lon[i], GPS_lon[i+1], 32000)
+    lon_pol += list(extra)
+lon_pol = np.array(lon_pol)
+
+lat_pol = [GPS_lat[0]]
+t_pol = [t[0]]
+for i in range(len(GPS_lat)-1):
+    extra = interpol(GPS_lat[i], GPS_lat[i+1], 32000)
+    lat_pol += list(extra)
+lat_pol = np.array(lat_pol)
+
+### lengte- en breedtegraad in functie van de afstand
+lon_goed = lon_pol[:232*32000]
+lat_goed = lat_pol[:232*32000]
+
+
+flinearlat = interpolate.interp1d(dx_pol_goed - dx_pol_goed[0], lat_goed)
+flinearlon = interpolate.interp1d(dx_pol_goed - dx_pol_goed[0], lon_goed)
+
+
+dx_new_coord = np.arange(0, dx_pol_goed[-1]-dx_pol_goed[0], 0.1) # Het laaste argument is de afgelegede afstand tussen samples dx
+
+linearlat = flinearlat(dx_new_coord)
+linearlon = flinearlon(dx_new_coord)
+
+### mean profile depth
+
+dist = dx_new
+profile = wegafstand - linearlaser
+
+baselength = 100 # base length in mm
+dx = (dist[1] - dist[0])*10**3 # afstand tussen twee opeenvolgende intervallen in mm
+intervals = int(baselength/dx) # het aantal intervallen dat over de base length gaat
+MPD = []
+
+for i in range(int(len(profile)/intervals)):
+    wegdek = profile[i*intervals:(i+1)*intervals]
+    PP = np.mean(wegdek)
+    M1 = np.max(wegdek[:int(intervals/2)])
+    M2 = np.max(wegdek[int(intervals/2):])
+    MPD.append((M1 + M2)/2 - PP)
+
+print(len(MPD), len(linearlon))
+MPD = np.array(MPD)
+peaks = np.where(MPD > 3)[0]
+for e in peaks:  # vervelende pieken die eruit schieten wegwerken, klopt niet echt maar is beter voor de visualisatie 
+    MPD[e] = (MPD[e-1]+MPD[e+1])/2
+    
+### kaart plotten met kleurcode van de MPD op elke plaats
+kaart = plt.imread('mapKortrijkse_Steenweg.png')
+
+MPD_norm = MPD/np.max(MPD)
+
+BBox = (3.6596, 3.7167, 51.0136, 51.0308)
+
+fig, ax = plt.subplots(figsize = (16, 14))
+
+lettergrootte = 20
+
+ax.scatter(linearlon[:-1], linearlat[:-1], zorder=1, alpha=1, c=MPD_norm, s=5, cmap='hot_r')
+ax.set_title('Afgelegde weg', fontsize=lettergrootte)
+ax.set_xlabel('lengtegraad', fontsize=lettergrootte)
+ax.set_ylabel('breedtegraad', fontsize=lettergrootte)
+ax.set_xlim(BBox[0],BBox[1])
+ax.set_ylim(BBox[2],BBox[3])
+
+ax.imshow(kaart, zorder=0, extent = BBox, aspect= 'equal')
