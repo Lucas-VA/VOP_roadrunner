@@ -82,6 +82,8 @@ vx_corr = np.cumsum(ax_corr*dt) + vx0
 dx_corr = np.cumsum(vx_corr*dt)
 dx_GPS_Dick = np.cumsum(vx_GPS_Dick*1)
 
+
+
 ###korte laserdata inlezen
 
 # contents = pd.read_csv('E:\\jan\\vop_3de_bach\\ritten_zwijnaarde_1\\laser_N60_kort.csv') 
@@ -90,13 +92,33 @@ dx_GPS_Dick = np.cumsum(vx_GPS_Dick*1)
 # time = time-time[0]
 # wegafstand = np.mean(laser_data)
 
-# ### verschuiving van laser zodat het overeenkomt met versnellingsdata
-# time = time[:-14197+900]
-# laser_data = laser_data[14197-900:]
+# ## verschuiving van laser zodat het overeenkomt met versnellingsdata
+
+
+# correlatie = np.correlate((wegafstand-laser_data)/max(np.abs(wegafstand-laser_data)), (az_Dick_new-np.average(az_Dick_new))/max(np.abs(az_Dick_new-np.average(az_Dick_new))), "valid")
+
+# plt.figure(figsize=(16,9))
+# plt.plot(correlatie/max(np.abs(correlatie)))
+# plt.show()
+
+# time = time[:-14613]
+# laser_data = laser_data[14613:]
+
+# plt.figure(figsize=(16,9))
+# plt.plot(time,(laser_data-np.average(laser_data))/np.max(laser_data-np.average(laser_data)))
+# plt.plot(t_Dick_new,2+(az_Dick_new-np.average(az_Dick_new))/np.max(az_Dick_new-np.average(az_Dick_new)))
+# plt.show()
+
+
+
 
 t_pol = np.arange(t_Dick_new[0],t_Dick_new[-100],t_Dick_new[-100]/len(t_Dick_new)/320)
 flineardx = interp1d(t_Dick_new[:-99], dx_corr)
+# flinearvx = interp1d(t_Dick_new[:-99], vx_corr)
 dx_pol = flineardx(t_pol)
+# vx_pol = flinearvx(t_pol)
+
+
 
 ###lange laserdata inlezen
 contents = pd.read_csv('E:\\jan\\vop_3de_bach\\ritten_zwijnaarde_1\\laser_N60.csv')
@@ -104,8 +126,8 @@ contents = pd.read_csv('E:\\jan\\vop_3de_bach\\ritten_zwijnaarde_1\\laser_N60.cs
 rawtime = contents[['time']].values.flatten()
 rawlaserfull = contents[['afstand_laser']].values.flatten()
 
-time = rawtime[:(-14197+900)*320]
-laser_full = rawlaserfull[(14197-900)*320:]
+time = rawtime[:(-14613)*320]
+laser_full = rawlaserfull[(14613)*320:]
 
 time = time-time[0]
 
@@ -114,6 +136,7 @@ laser_data = laser_full[:len(dx_pol)-len(laser_full)]
 
 wegafstand = np.mean(laser_full[-32000*5:])
 
+# pd.DataFrame({'time': time[32000*255:32000*257], 'snelheid':vx_pol[32000*255:32000*257], 'afgelegde afstand':dx_pol[32000*255:32000*257], 'afstand_laser': laser_data[32000*255:32000*257]}).to_csv('C:\\Users\\janma\\Downloads\\dataN60_2sec.csv')
 
 
 ### laserdata in functie van afstand
@@ -144,6 +167,14 @@ dx_new_coord = np.arange(0, dx_pol[-1]-dx_pol[0], 0.1) # Het laaste argument is 
 linearlat = flinearlat(dx_new_coord)
 linearlon = flinearlon(dx_new_coord)
 
+### RMS z-acceleratie
+gem_z = np.average(az_Dick_new)
+
+lopend_rms_z2 = np.convolve(az_Dick_new-gem_z, np.ones(50)/50, 'same')
+flinearrms = interp1d(dx_corr - dx_pol[0], lopend_rms_z2[:-99])
+rms_pol = flinearrms(dx_new_coord)
+
+
 ### mean profile depth
 
 dist = dx_new
@@ -172,6 +203,10 @@ kaart = plt.imread('mapN60.png')
 
 MPD_norm = MPD/np.max(MPD)
 
+plt.plot(dx_new_coord[:-1], MPD_norm + 2)
+plt.plot(dx_new_coord[:-1], rms_pol[:-1]/np.max(rms_pol))
+plt.show()
+
 BBox = (3.6591, 3.7201, 50.9744, 51.0152)
 
 fig, ax = plt.subplots(figsize = (16, 14))
@@ -179,6 +214,8 @@ fig, ax = plt.subplots(figsize = (16, 14))
 lettergrootte = 20
 
 ax.scatter(linearlon[:-1], linearlat[:-1], zorder=1, alpha=1, c=MPD_norm, s=5, cmap='hot_r')
+# ax.scatter(GPS_lon[255:320], GPS_lat[255:320], zorder=1, alpha= 1, c='b', s=3)
+# ax.scatter(GPS_lon[255], GPS_lat[255], zorder=1, c='r', s=20)
 ax.set_title('Afgelegde weg', fontsize=lettergrootte)
 ax.set_xlabel('lengtegraad', fontsize=lettergrootte)
 ax.set_ylabel('breedtegraad', fontsize=lettergrootte)
