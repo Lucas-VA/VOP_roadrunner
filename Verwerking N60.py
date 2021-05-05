@@ -82,7 +82,10 @@ vx_corr = np.cumsum(ax_corr*dt) + vx0
 dx_corr = np.cumsum(vx_corr*dt)
 dx_GPS_Dick = np.cumsum(vx_GPS_Dick*1)
 
-
+plt.figure(figsize=(16,9))
+plt.plot(t_GPS,dx_GPS_Dick)
+plt.plot(t_Dick_new[:-99],dx_corr)
+plt.show()
 
 ###korte laserdata inlezen
 
@@ -109,6 +112,17 @@ dx_GPS_Dick = np.cumsum(vx_GPS_Dick*1)
 # plt.plot(t_Dick_new,2+(az_Dick_new-np.average(az_Dick_new))/np.max(az_Dick_new-np.average(az_Dick_new)))
 # plt.show()
 
+# ### Correctie laser op afstand auto van 255 tot 257 seconden
+# snelh_corr = integrate.cumtrapz(az_Dick_new[100*255:100*265] - np.mean(az_Dick_new[100*255:100*265]), dx=1/100.0, initial=0)
+# afstand_corr = integrate.cumtrapz(snelh_corr, dx=1/100.0, initial=0)
+
+# plt.plot(time[100*255:100*265], wegafstand - laser_data[100*255:100*265], label='gemeten afstand tov wegdek')
+# plt.plot(time[100*255:100*265], wegafstand - (laser_data[100*255:100*265]+afstand_corr), label='afstand tov wegdek na correctie')
+# plt.title('profiel van het wegdek')
+# plt.xlabel('tijd [s]')
+# plt.ylabel('afstand tov wegdek [mm]')
+# plt.legend()
+# plt.show()
 
 
 
@@ -167,10 +181,12 @@ dx_new_coord = np.arange(0, dx_pol[-1]-dx_pol[0], 0.1) # Het laaste argument is 
 linearlat = flinearlat(dx_new_coord)
 linearlon = flinearlon(dx_new_coord)
 
+
+
 ### RMS z-acceleratie
 gem_z = np.average(az_Dick_new)
 
-lopend_rms_z2 = np.convolve(az_Dick_new-gem_z, np.ones(50)/50, 'same')
+lopend_rms_z2 = np.sqrt(np.convolve(np.power(az_Dick_new-gem_z,2), np.ones(50)/50, 'same'))
 flinearrms = interp1d(dx_corr - dx_pol[0], lopend_rms_z2[:-99])
 rms_pol = flinearrms(dx_new_coord)
 
