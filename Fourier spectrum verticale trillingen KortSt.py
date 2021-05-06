@@ -51,7 +51,7 @@ plt.xlabel('frequentie [Hz]')
 plt.grid()
 plt.show()
 
-print(xf[np.where(yf == np.max(yf))[0]])
+print(xf[np.where(yf[15000:] == np.max(yf[15000:]))[0]+15000], np.where(yf[15000:] == np.max(yf[15000:]))) # max waar frequentie > 0
 
 g_Dick = np.mean(az_Dick[24600:26500])
 az_Dcorr = az_Dick - g_Dick
@@ -68,4 +68,4 @@ plt.xlabel('frequentie [Hz]')
 plt.grid()
 plt.show()
 
-print(xf[np.where(yplot == np.max(yplot))[0]])
+print(xf[np.where(yplot[15000:] == np.max(yplot[15000:]))[0]+15000], np.where(yplot[15000:] == np.max(yplot[15000:])))
