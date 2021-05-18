@@ -230,8 +230,6 @@ fig, ax = plt.subplots(figsize = (16, 14))
 lettergrootte = 20
 
 ax.scatter(linearlon[:-1], linearlat[:-1], zorder=1, alpha=1, c=MPD_norm, s=5, cmap='hot_r')
-# ax.scatter(GPS_lon[255:320], GPS_lat[255:320], zorder=1, alpha= 1, c='b', s=3)
-# ax.scatter(GPS_lon[255], GPS_lat[255], zorder=1, c='r', s=20)
 ax.set_title('Afgelegde weg', fontsize=lettergrootte)
 ax.set_xlabel('lengtegraad', fontsize=lettergrootte)
 ax.set_ylabel('breedtegraad', fontsize=lettergrootte)
