@@ -102,6 +102,7 @@ def simuleer(weg, dt=0.005, vh=np.array([None])):
     return x-(l2+d)*theta-xtd
 
 
+
 #TEST WEGPROFIELEN
 
 #print(simuleer(np.append(np.array([0, 0, 0, 0, 0]), 0.1*np.ones(1000)), dt=0.005))
